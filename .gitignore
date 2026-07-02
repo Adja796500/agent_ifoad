@@ -1,0 +1,27 @@
+# Variables d'environnement
+config/.env
+*.env
+
+# Environnement virtuel
+.venv/
+venv/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.idea/
+.vscode/
+
+# Journaux
+logs/
+*.log
+
+# Données générées
+data/vectorielle/
+
+# Fichiers système
+.DS_Store
+Thumbs.db

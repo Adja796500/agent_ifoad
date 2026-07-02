@@ -1,0 +1,50 @@
+# ============================================================
+# DÉPENDANCES DU PROJET - Agent IA Assistant IFOAD-UJKZ
+# VERSION CORRIGÉE - Compatible Python 3.14 / Windows
+# ============================================================
+
+# --- SCRAPING ET COLLECTE DE DONNÉES ---
+requests>=2.31.0
+beautifulsoup4>=4.12.3
+lxml>=5.1.0
+selenium>=4.18.1
+PyPDF2>=3.0.1
+pdfplumber>=0.10.3
+python-docx>=1.1.0
+facebook-scraper>=0.2.59
+
+# --- TRAITEMENT DU TEXTE ---
+chardet>=5.2.0
+python-dotenv>=1.0.0
+
+# --- EMBEDDINGS (LOCAL, GRATUIT) ---
+sentence-transformers>=2.7.0
+
+# --- BASE DE DONNÉES VECTORIELLE ---
+chromadb>=0.4.24
+
+# --- RECHERCHE HYBRIDE BM25 ---
+rank-bm25>=0.2.2
+nltk>=3.8.1
+
+# --- FRAMEWORK ORCHESTRATION IA ---
+# Versions compatibles entre elles (corrigé)
+langchain>=0.2.12
+langchain-community>=0.2.12
+langchain-groq>=0.1.9
+
+# --- API LLM GRATUITE (GROQ) ---
+groq>=0.9.0
+
+# --- INTERFACE UTILISATEUR ---
+streamlit>=1.35.0
+
+# --- ÉVALUATION ---
+rouge-score>=0.1.2
+
+# --- UTILITAIRES ---
+pandas>=2.2.1
+numpy>=1.26.4
+tqdm>=4.66.2
+loguru>=0.7.2
+pyyaml>=6.0.1
