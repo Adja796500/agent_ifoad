@@ -2,7 +2,7 @@
 ============================================================
 INTERFACE UTILISATEUR - Application Streamlit Agent IFOAD
 ============================================================
-Version avec design joyeux et moderne
+Version optimisée - Chargement rapide avec indicateur de progression
 ============================================================
 """
 
@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 import random
+import time
 
 import streamlit as st
 
@@ -39,12 +40,12 @@ st.markdown("""
 <style>
     /* Fond général */
     .stApp {
-       background: linear-gradient(135deg, #BBDEFB 0%, #A5D6A7 100%);
+        background: linear-gradient(135deg, #BBDEFB 0%, #A5D6A7 100%);
         min-height: 100vh;
         position: relative;
     }
     
-    /* Amélioration de la lisibilité avec une superposition légère */
+    /* Amélioration de la lisibilité */
     .stApp::before {
         content: '';
         position: fixed;
@@ -67,22 +68,22 @@ st.markdown("""
         backdrop-filter: blur(10px);
     }
     
-   /* En-tête avec couleurs IFOAD */
-.custom-header {
-    background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
-    padding: 25px 20px;
-    border-radius: 20px;
-    color: white !important;
-    text-align: center;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 30px rgba(46, 125, 50, 0.4);
-    border: 2px solid rgba(165, 214, 167, 0.3);
-}
-
-.custom-header h1,
-.custom-header p {
-    color: white !important;
-}
+    /* En-tête avec couleurs IFOAD */
+    .custom-header {
+        background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
+        padding: 25px 20px;
+        border-radius: 20px;
+        color: white !important;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(46, 125, 50, 0.4);
+        border: 2px solid rgba(165, 214, 167, 0.3);
+    }
+    
+    .custom-header h1,
+    .custom-header p {
+        color: white !important;
+    }
     
     /* Badges de confiance */
     .confiance-elevee {
@@ -194,6 +195,45 @@ st.markdown("""
     .floating {
         animation: float 3s ease-in-out infinite;
     }
+    
+    /* Barre de progression personnalisée */
+    .progress-container {
+        background: rgba(255,255,255,0.2);
+        border-radius: 30px;
+        padding: 5px;
+        margin: 10px 0;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #a8e6cf, #fd79a8, #a29bfe);
+        height: 8px;
+        border-radius: 30px;
+        transition: width 0.5s ease;
+        width: 0%;
+        animation: progress 3s ease-in-out infinite;
+    }
+    
+    @keyframes progress {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+    }
+    
+    /* Spinner personnalisé */
+    .custom-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: #a8e6cf;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -215,6 +255,69 @@ def initialiser_session():
         st.session_state.question_suggeree = ""
     if "emojis" not in st.session_state:
         st.session_state.emojis = ["🌟", "✨", "🌈", "🎉", "💫", "🌸", "🌺", "🌻", "🌷", "🌹"]
+    if "chargement_etape" not in st.session_state:
+        st.session_state.chargement_etape = 0
+    if "chargement_termine" not in st.session_state:
+        st.session_state.chargement_termine = False
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# CHARGEMENT AGENT AVEC PROGRESS BAR
+# ════════════════════════════════════════════════════════════════════════════
+
+def charger_agent_avec_progression():
+    """Charge l'agent avec affichage de progression."""
+
+    # Créer un conteneur pour la progression
+    progress_container = st.empty()
+
+    # Afficher le statut de chargement
+    status_container = st.empty()
+
+    # Étapes de chargement
+    etapes = [
+        "🔍 Initialisation des modules...",
+        "📚 Chargement des embeddings...",
+        "🗂️ Indexation de la base vectorielle...",
+        "⚙️ Configuration du reranker...",
+        "🤖 Initialisation du LLM...",
+        "✅ Agent prêt !"
+    ]
+
+    # Barre de progression
+    progress_bar = progress_container.progress(0)
+
+    for i, etape in enumerate(etapes):
+        # Mettre à jour le statut
+        status_container.info(f"⏳ {etape}")
+
+        # Mettre à jour la progression
+        progress = (i + 1) / len(etapes)
+        progress_bar.progress(progress)
+
+        # Simuler un chargement (pour l'affichage)
+        time.sleep(0.3)
+
+    # Chargement réel de l'agent
+    status_container.info("⏳ Chargement de l'agent RAG Hybride...")
+
+    try:
+        from src.agent.pipeline_rag import AgentRAGHybride
+        agent = AgentRAGHybride()
+
+        # Mettre à jour le statut
+        status_container.success("✅ Agent chargé avec succès !")
+        progress_bar.progress(1.0)
+
+        # Nettoyer après un court délai
+        time.sleep(0.5)
+        progress_container.empty()
+        status_container.empty()
+
+        return agent
+    except Exception as e:
+        status_container.error(f"❌ Erreur lors du chargement : {str(e)}")
+        return None
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -231,7 +334,46 @@ def charger_agent():
         from src.agent.pipeline_rag import AgentRAGHybride
         return AgentRAGHybride()
     except Exception as e:
-        return None, str(e)
+        return None
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# CHARGEMENT RAPIDE - SIMPLE INDICATEUR
+# ════════════════════════════════════════════════════════════════════════════
+
+def afficher_chargement_simple():
+    """Affiche un indicateur de chargement simple."""
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+        <div style="text-align: center; padding: 40px 20px;">
+            <div style="font-size: 80px; margin-bottom: 20px;">🚀</div>
+            <h2 style="color: #2d3436;">Chargement de l'agent IA...</h2>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <p style="color: #636e72; margin-top: 15px;">
+                ⏳ Cette opération peut prendre 1-2 minutes au premier lancement
+            </p>
+            <p style="color: #b2bec3; font-size: 0.9rem;">
+                Les modèles sont mis en cache pour les prochaines utilisations
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Simuler une progression avec des points
+        st.markdown("""
+        <div style="text-align: center; margin-top: 20px; font-size: 1.5rem;">
+            <span id="dots">.</span>
+        </div>
+        <script>
+            let dots = '';
+            setInterval(() => {
+                dots = dots.length >= 3 ? '' : dots + '.';
+                document.getElementById('dots').textContent = dots;
+            }, 500);
+        </script>
+        """, unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -277,22 +419,18 @@ def verifier_configuration() -> bool:
 def afficher_sidebar():
     """Panneau latéral coloré avec questions suggérées."""
     with st.sidebar:
-        # En-tête décoré avec logo
-        st.markdown(f"""
+        # En-tête décoré avec icône
+        st.markdown("""
         <div style="text-align: center; padding: 10px;">
-            <img src="agent_ifoad\logo.png" 
-                 style="
-                     width: 100px; 
-                     height: auto;
-                     margin-bottom: 15px;
-                     filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
-                     border-radius: 15px;
-                     background: rgba(255,255,255,0.95);
-                     padding: 8px;
-                     transition: transform 0.3s ease;
-                 "
-                 onmouseover="this.style.transform='scale(1.05)'"
-                 onmouseout="this.style.transform='scale(1)'">
+            <div style="
+                font-size: 80px;
+                line-height: 1;
+                margin-bottom: 10px;
+                filter: drop-shadow(0 4px 15px rgba(0,0,0,0.3));
+                transition: transform 0.3s ease;
+            ">
+                🎓
+            </div>
             <h2 style="color: white; margin: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">IFOAD-UJKZ</h2>
             <p style="color: #C8E6C9; font-size: 0.9rem; margin-top: 5px;">🤖 Assistant IA Intelligent</p>
         </div>
@@ -301,33 +439,34 @@ def afficher_sidebar():
         st.divider()
 
         # ─── Statut ──────────────────────────────────────────────────────
-        st.markdown("###  Statut")
+        st.markdown("### 📊 Statut")
         if st.session_state.agent_charge:
             st.success("✅ Agent opérationnel")
             st.caption(f"🤖 Modèle : `{MODELE_LLM}`")
             st.caption(f"📚 Docs/réponse : `{NOMBRE_DOCS_FINAL}`")
         else:
-            st.info("⏳ En cours de chargement...")
+            st.warning("⏳ Chargement en cours...")
 
         st.divider()
 
         # ─── Questions suggérées ──────────────────────────────────────────
-        st.markdown("### Questions populaires")
+        st.markdown("### 💡 Questions populaires")
 
         questions = [
-            " Quelles formations propose l'IFOAD ?",
-            "Comment s'inscrire à l'IFOAD ?",
-            " Quelles sont les dates des examens ?",
-            " Quels sont les frais de scolarité ?",
-            " Quels documents pour le dossier ?",
-            " Comment contacter l'IFOAD ?",
-            " Quels sont les débouchés du Master ?",
-            " Quand commencent les cours ?",
+            "🎯 Quelles formations propose l'IFOAD ?",
+            "📝 Comment s'inscrire à l'IFOAD ?",
+            "📅 Quelles sont les dates des examens ?",
+            "💰 Quels sont les frais de scolarité ?",
+            "📄 Quels documents pour le dossier ?",
+            "📞 Comment contacter l'IFOAD ?",
+            "🎓 Quels sont les débouchés du Master ?",
+            "🗓️ Quand commencent les cours ?",
         ]
 
+        # Désactiver les boutons pendant le chargement
         for idx, q in enumerate(questions):
             key = f"q_side_{idx}"
-            if st.button(q, key=key, use_container_width=True):
+            if st.button(q, key=key, use_container_width=True, disabled=not st.session_state.agent_charge):
                 st.session_state.question_suggeree = q
                 st.rerun()
 
@@ -556,24 +695,29 @@ def main():
     if not verifier_configuration():
         st.stop()
 
-    # ─── Chargement de l'agent ────────────────────────────────────────────
+    # ─── Chargement de l'agent avec indicateur ────────────────────────────
     if not st.session_state.agent_charge:
-        with st.spinner("🚀 Chargement de l'agent IA... (1-2 min au 1er lancement)"):
+        # Afficher un indicateur de chargement moderne
+        afficher_chargement_simple()
+
+        # Charger l'agent en arrière-plan
+        with st.spinner(""):
             agent = charger_agent()
 
+        # Vérification correcte : si agent est None, il y a eu une erreur
         if agent is None:
-            st.error("😢 Impossible de charger l'agent. Vérifiez les logs.")
+            st.error("😢 Impossible de charger l'agent. Vérifiez les logs et les dépendances.")
             st.stop()
 
         st.session_state.agent_rag = agent
         st.session_state.agent_charge = True
-        st.balloons()  # Célébration du chargement
+
+        # Nettoyer l'indicateur et recharger la page
         st.rerun()
 
     agent = st.session_state.agent_rag
 
     # ─── Message de bienvenue (si conversation vide) ──────────────────────
-
     if not st.session_state.messages_chat:
         with st.chat_message("assistant", avatar="🎓"):
             st.markdown("""
@@ -587,12 +731,13 @@ def main():
 
                 Je peux vous aider avec :
                
-                1. Les formations disponibles (Master 1 IFOAD, Licence MI...)
-                2. Les modalités d'inscription et documents requis
-                3. Le calendrier académique  (cours, examens, regroupements)
-                4. Les frais de scolarité  et modalités de paiement
-                5. Les contacts du secrétariat IFOAD
-                    Comment puis-je vous aider aujourd'hui ?
+                1. Les **formations disponibles** (Master 1 IFOAD, Licence MI...)
+                2. Les **modalités d'inscription** et documents requis
+                3. Le **calendrier académique** (cours, examens, regroupements)
+                4. Les **frais de scolarité** et modalités de paiement
+                5. Les **contacts** du secrétariat IFOAD
+                   
+                Comment puis-je vous aider aujourd'hui ?
                
             </div>
             """, unsafe_allow_html=True)
@@ -609,7 +754,8 @@ def main():
 
     # ─── Zone de saisie ──────────────────────────────────────────────────
     question = st.chat_input(
-        "💭 Posez votre question sur l'IFOAD-UJKZ... (ex: Comment s'inscrire ?)"
+        "💭 Posez votre question sur l'IFOAD-UJKZ... (ex: Comment s'inscrire ?)",
+        disabled=not st.session_state.agent_charge
     )
     if question:
         traiter_question(question.strip(), agent)
