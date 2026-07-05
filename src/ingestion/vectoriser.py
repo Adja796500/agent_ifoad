@@ -470,7 +470,11 @@ def vectoriser_tous_les_documents() -> int:
         logger.info(f"      • {type_src:<20} : {nb} chunks")
     logger.info("=" * 60)
 
-    return nb_chunks_total
+    # ─── CORRECTION : on retourne le TOTAL en base, pas seulement les nouveaux
+    # Si nb_chunks_total == 0 mais que la base contient déjà des chunks,
+    # c'est un succès (les données étaient déjà vectorisées)
+    nb_total_en_base = stats['nb_chunks_total']
+    return nb_total_en_base
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -486,8 +490,8 @@ if __name__ == "__main__":
     nb_chunks = vectoriser_tous_les_documents()
 
     if nb_chunks > 0:
-        print(f"\n Succès ! {nb_chunks} chunks vectorisés.")
-        print(" Prochaine étape : python src/interface/application.py")
+        print(f"\n✅ Succès ! {nb_chunks} chunks disponibles en base.")
+        print("📌 Prochaine étape : python src/interface/application.py")
     else:
-        print("\n Échec de la vectorisation. Vérifiez les logs.")
+        print("\n❌ Échec de la vectorisation. Vérifiez les logs.")
         sys.exit(1)
