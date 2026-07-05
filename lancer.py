@@ -150,8 +150,10 @@ def etape_3_interface():
     print("Arrêtez avec CTRL+C\n")
 
     script = RACINE / "src" / "interface" / "application.py"
+    # CORRECTION : utilise "python -m streamlit" au lieu de "streamlit"
+    # pour éviter l'erreur CommandNotFoundException sur Windows
     subprocess.run(
-        ["streamlit", "run", str(script),
+        [sys.executable, "-m", "streamlit", "run", str(script),
          "--server.port", "8501",
          "--browser.gatherUsageStats", "false"],
         cwd=str(RACINE)
